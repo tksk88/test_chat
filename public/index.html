@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Simple Chat</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            padding: 8px;
+            margin-bottom: 10px;
+            background-color: #f2f2f2;
+            border-radius: 5px;
+        }
+
+        #form {
+            display: flex;
+        }
+
+        #input {
+            flex: 1;
+            padding: 10px;
+        }
+
+        #button {
+            padding: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>chat room</h1>
+    <ul id="messages"></ul>
+    <input id="input_name" placeholder="名前" value="匿名" autocomplete="off" />
+    <input id="input" autocomplete="off" /><button onclick="send();" id="button">Send</button>
+
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        var socket = io();
+        var form = document.getElementById('form');
+        var input = document.getElementById('input');
+
+        function send() {
+            if (input.value) {
+                socket.emit(
+                    'chat message',
+                    {
+                        text: input.value,
+                        color: '#FF0000',
+                        name: document.getElementById('input_name').value
+                    }
+                );
+                input.value = '';
+            }
+        }
+        let chats = [];
+        socket.on('chat message', function (msg) {
+            var item = document.createElement('li');
+            item.textContent = `${msg.text}（${msg.name}）`;
+            item.style.color = msg.color;
+            document.getElementById('messages').appendChild(item);
+            window.scrollTo(0, document.body.scrollHeight);
+            chats.push(
+                {
+                    text: msg.text,
+                    name: msg.name,
+                    x: random(width),
+                    y: random(height),
+                    life: 255
+                }
+            )
+
+        });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.9.4/lib/p5.js"></script>
+    <script>
+        function setup() {
+            createCanvas(400, 300);
+            background(220);
+        }
+
+        function draw() {
+            background(220);
+            for (let chat of chats) {
+                if (chat.life > 0) {
+                    fill(0);
+                    text(chat.text, chat.x, chat.y);
+                    chat.life = chat.life - 1;
+                }
+                else {
+                    chats.splice(chats.indexOf(chat), 1);
+                }
+            }
+        }
+    </script>
+
+
+</body>
+
+</html>
